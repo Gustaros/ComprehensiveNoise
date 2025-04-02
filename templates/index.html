@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог Шумов - Полная библиотека всех типов шумов{% endblock %}
+
+{% block content %}
+<div class="home-page">
+    <section class="hero">
+        <h1>Полный каталог всех типов шумов</h1>
+        <p class="subtitle">Исчерпывающий справочник по 117 типам шумов в обработке сигналов и изображений</p>
+        
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Поиск шумов...">
+            <button id="search-btn">Поиск</button>
+        </div>
+    </section>
+
+    <section class="featured-noises">
+        <h2>Популярные типы шумов</h2>
+        <div class="featured-grid">
+            {% for noise_id in featured_noises %}
+            {% set noise = noise_catalog[noise_id] %}
+            <a href="{{ url_for('noise_page', noise_id=noise_id) }}" class="featured-card">
+                <div class="card-image">
+                    <img src="{{ url_for('static', filename='images/thumbnails/' + noise_id + '.png') }}" alt="{{ noise.title }}">
+                </div>
+                <div class="card-content">
+                    <h3>{{ noise.title }}</h3>
+                    <p>{{ noise.short_description }}</p>
+                    <div class="card-tags">
+                        {% for tag in noise.tags[:2] %}
+                        <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="categories-section">
+        <h2>Категории шумов</h2>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <h3>{{ category.id }}. {{ category.title }}</h3>
+                <p>{{ category.description }}</p>
+                <ul class="category-noises">
+                    {% for noise in category.top_noises %}
+                    <li><a href="{{ url_for('noise_page', noise_id=noise.id) }}">{{ noise.title }}</a></li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('category_page', category_id=category.id) }}" class="view-all">Все шумы в категории &rarr;</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="statistics">
+        <h2>Статистика каталога</h2>
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-value">117</div>
+                <div class="stat-label">Типов шумов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">14</div>
+                <div class="stat-label">Категорий</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">300+</div>
+                <div class="stat-label">Параметров</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">50+</div>
+                <div class="stat-label">Формул</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <h2>О проекте</h2>
+        <div class="about-content">
+            <p>Этот каталог представляет собой наиболее полную коллекцию всех известных типов шумов, используемых в обработке сигналов, изображений, компьютерной графике и других областях. Каждый тип шума включает интерактивную демонстрацию, математическое описание, примеры кода и информацию о его практическом применении.</p>
+            <p>Проект идеально подходит для:</p>
+            <ul>
+                <li>Студентов, изучающих обработку сигналов и изображений</li>
+                <li>Разработчиков компьютерной графики и процедурной генерации</li>
+                <li>Исследователей в области машинного зрения и искусственного интеллекта</li>
+                <li>Инженеров, работающих с системами обработки данных</li>
+                <li>Фотографов и специалистов по обработке изображений</li>
+            </ul>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        
+        searchBtn.addEventListener('click', function() {
+            const query = searchInput.value.trim();
+            if (query !== '') {
+                window.location.href = "{{ url_for('search') }}?q=" + encodeURIComponent(query);
+            }
+        });
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+    });
+</script>
+{% endblock %}
