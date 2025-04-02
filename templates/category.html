@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.title }} - Каталог Шумов{% endblock %}
+
+{% block content %}
+<div class="category-page">
+    <section class="category-header">
+        <h1>{{ category.id }}. {{ category.title }}</h1>
+        <p class="category-description">{{ category.description }}</p>
+    </section>
+
+    <section class="noise-list">
+        <h2>Типы шумов в этой категории</h2>
+        <div class="noise-grid">
+            {% for noise in category.noises %}
+            <div class="noise-card">
+                <div class="noise-image">
+                    <img src="{{ url_for('static', filename='images/thumbnails/' + noise.id + '.png') }}" alt="{{ noise.title }}">
+                </div>
+                <div class="noise-content">
+                    <h3><a href="{{ url_for('noise_page', noise_id=noise.id) }}">{{ noise.index }} {{ noise.title }}</a></h3>
+                    <p>{{ noise.short_description }}</p>
+                    <div class="noise-tags">
+                        {% for tag in noise.tags[:3] %}
+                        <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="category-info">
+        <h2>О категории</h2>
+        <div class="info-content">
+            <p>{{ category.long_description }}</p>
+            
+            {% if category.applications %}
+            <h3>Применения</h3>
+            <ul>
+                {% for app in category.applications %}
+                <li><strong>{{ app.field }}:</strong> {{ app.description }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            
+            {% if category.references %}
+            <h3>Рекомендуемая литература</h3>
+            <ul class="reference-list">
+                {% for ref in category.references %}
+                <li>{{ ref.authors }} ({{ ref.year }}). {{ ref.title }}. {{ ref.publisher }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="related-categories">
+        <h2>Связанные категории</h2>
+        <div class="related-grid">
+            {% for related_id in category.related_categories %}
+            {% set related = categories[related_id] %}
+            <a href="{{ url_for('category_page', category_id=related_id) }}" class="related-card">
+                <h3>{{ related.title }}</h3>
+                <p>{{ related.short_description }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
