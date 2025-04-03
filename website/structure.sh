@@ -1,0 +1,9 @@
+mkdir -p ./assets/css
+mkdir -p ./assets/js
+mkdir -p ./assets/images
+mkdir -p ./templates
+mkdir -p ./output/noise_types
+mkdir -p ./output/categories
+mkdir -p ./output/assets/images
+mkdir -p ./output/assets/js
+mkdir -p ./output/assets/css
