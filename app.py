@@ -161,4 +161,12 @@ for ax in axs_hist:
     ax.set_ylabel('Частота')
 st.pyplot(fig_hist)
 
+# --- Генерация кода для выбранного шума ---
+st.markdown("#### Исходный код функции шума")
+try:
+    code_str = inspect.getsource(noise_func)
+    st.code(code_str, language="python")
+except Exception:
+    st.warning("Не удалось получить исходный код функции. Возможно, она импортирована динамически.")
+
 st.caption("© ComprehensiveNoise, 2025")
