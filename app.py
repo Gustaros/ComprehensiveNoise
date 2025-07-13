@@ -165,7 +165,7 @@ st.markdown(f"**Описание:**\n{doc}")
 # Применяем шум
 noisy_img, noise = noise_func(image)
 
-# Визуализация
+# Визуализация изображений
 fig, axs = plt.subplots(1, 3, figsize=(12, 4))
 axs[0].imshow(image, cmap='gray')
 axs[0].set_title('Оригинал')
@@ -177,5 +177,18 @@ axs[2].imshow(noise, cmap='viridis')
 axs[2].set_title('Шум')
 axs[2].axis('off')
 st.pyplot(fig)
+
+# Визуализация гистограмм
+fig_hist, axs_hist = plt.subplots(1, 3, figsize=(12, 3))
+axs_hist[0].hist(image.ravel(), bins=64, color='gray')
+axs_hist[0].set_title('Гистограмма оригинала')
+axs_hist[1].hist(noisy_img.ravel(), bins=64, color='blue')
+axs_hist[1].set_title('Гистограмма с шумом')
+axs_hist[2].hist(noise.ravel(), bins=64, color='purple')
+axs_hist[2].set_title('Гистограмма шума')
+for ax in axs_hist:
+    ax.set_xlabel('Значение')
+    ax.set_ylabel('Частота')
+st.pyplot(fig_hist)
 
 st.caption("© ComprehensiveNoise, 2025")
