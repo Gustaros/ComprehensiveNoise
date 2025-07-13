@@ -27,15 +27,43 @@ image = create_sample_image(size=(img_size, img_size), pattern="gradient")
 
 # Генерируем интерактивные виджеты для параметров шума (кроме image)
 with st.sidebar.expander("Параметры шума", expanded=True):
+    minmax_cache = {}
     for name, param in params.items():
         if name == "image":
             continue
         ann = param.annotation
         default = param.default
-        if ann is int or (isinstance(default, int) and not isinstance(default, bool)):
-            param_values[name] = st.number_input(name, value=default, step=1)
+        # Слайдер для вероятностей
+        if name in {"p", "prob", "probability", "salt_prob", "pepper_prob"}:
+            param_values[name] = st.slider(name, 0.0, 1.0, float(default), step=0.01)
+        # Слайдер для mean, sigma, intensity, scale, loc, var (>=0)
+        elif name in {"mean", "sigma", "intensity", "scale", "loc", "var", "std", "stddev"}:
+            minv = 0.0
+            maxv = float(default)*4 if float(default) > 0 else 100.0
+            if isinstance(default, float):
+                param_values[name] = st.slider(name, float(minv), float(maxv), float(default), step=0.01)
+            else:
+                param_values[name] = st.slider(name, int(minv), int(maxv), int(default), step=1)
+        # min/max как слайдеры с кэшированием
+        elif name in {"min", "low"}:
+            minv = -255.0
+            maxv = float(param.default) if isinstance(param.default, (int, float)) else 0.0
+            minmax_cache['min'] = st.slider(name, minv, maxv if maxv > minv else minv+1, float(default), step=1.0)
+            param_values[name] = minmax_cache['min']
+        elif name in {"max", "high"}:
+            minv = minmax_cache.get('min', float(default)-1)
+            maxv = 255.0
+            param_values[name] = st.slider(name, minv+1, maxv, float(default), step=1.0)
+        # Для int с ограничениями
+        elif ann is int or (isinstance(default, int) and not isinstance(default, bool)):
+            minv = 0 if name in {"n", "M", "N", "df", "dfn", "dfd"} else -1000
+            maxv = 1000
+            param_values[name] = st.slider(name, minv, maxv, int(default), step=1)
+        # Для float с ограничениями
         elif ann is float or isinstance(default, float):
-            param_values[name] = st.number_input(name, value=default, step=0.01, format="%.3f")
+            minv = 0.0 if name in {"alpha", "beta", "a", "b", "kappa"} else -1000.0
+            maxv = 1000.0
+            param_values[name] = st.number_input(name, value=float(default), step=0.01, format="%.3f", min_value=minv, max_value=maxv)
         elif ann is bool or isinstance(default, bool):
             param_values[name] = st.checkbox(name, value=default)
         elif ann is tuple or isinstance(default, tuple):
