@@ -9,6 +9,48 @@ import io
 
 st.title("Визуализация шумов (ComprehensiveNoise)")
 
+# --- Режим: один шум или галерея ---
+mode = st.sidebar.radio("Режим", ["Один шум", "Галерея"], index=0)
+category_names = list(NOISE_CATEGORIES.keys())
+
+if mode == "Галерея":
+    selected_categories = st.sidebar.multiselect("Фильтрация по категориям", category_names, default=category_names)
+    user_file = st.sidebar.file_uploader("Загрузить изображение (PNG/JPG)", type=["png", "jpg", "jpeg"], key="gallery_upload")
+    if user_file is not None:
+        img = Image.open(user_file).convert("L")
+        image = np.array(img).astype(np.float32)
+    else:
+        img_size = st.sidebar.slider("Размер тестового изображения", 64, 512, 128, step=32, key="gallery_imgsize")
+        image = create_sample_image(size=(img_size, img_size), pattern="gradient")
+    st.header("Галерея шумов")
+    for cat in selected_categories:
+        st.subheader(cat)
+        noise_names = NOISE_CATEGORIES[cat]
+        cols = st.columns(3)
+        for idx, noise_name in enumerate(noise_names):
+            noise_func = noise_functions[noise_name]
+            doc = inspect.getdoc(noise_func) or ""
+            doc_lines = doc.splitlines()
+            short_desc = doc_lines[0] if doc_lines else ""
+            formula = ""
+            for l in doc_lines[1:4]:
+                if "=" in l or "Formula" in l or "PDF" in l or "g(x,y)" in l:
+                    formula = l.strip()
+                    break
+            # Миниатюра
+            try:
+                noisy_img, _ = noise_func(image, **{k: v.default for k, v in inspect.signature(noise_func).parameters.items() if k != "image"})
+                thumb = np.clip(noisy_img, 0, 255).astype(np.uint8)
+            except Exception:
+                thumb = np.zeros_like(image)
+            with cols[idx % 3]:
+                st.image(thumb, caption=noise_name, use_column_width=True, clamp=True)
+                st.markdown(f"**Описание:** {short_desc}")
+                if formula:
+                    st.markdown(f"<span style='font-size:0.9em;color:#666;'>Формула: <code>{formula}</code></span>", unsafe_allow_html=True)
+    st.caption("Выберите 'Один шум' для подробной настройки параметров.")
+    st.stop()
+
 # Сайдбар: выбор категории и шума
 category = st.sidebar.selectbox("Категория шума", list(NOISE_CATEGORIES.keys()))
 noise_names = NOISE_CATEGORIES[category]
