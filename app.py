@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from noise_catalog import noise_functions, create_sample_image, NOISE_CATEGORIES
 import inspect
+import cv2
+from PIL import Image
+import io
 
 st.title("Визуализация шумов (ComprehensiveNoise)")
 
@@ -22,8 +25,15 @@ if doc:
     st.markdown(f"**Описание и формула:**\n```{doc}```", unsafe_allow_html=True)
 
 # Параметры изображения
-img_size = st.sidebar.slider("Размер изображения", 64, 512, 256, step=32)
-image = create_sample_image(size=(img_size, img_size), pattern="gradient")
+user_file = st.sidebar.file_uploader("Загрузить изображение (PNG/JPG)", type=["png", "jpg", "jpeg"])
+
+if user_file is not None:
+    img = Image.open(user_file).convert("L")
+    image = np.array(img).astype(np.float32)
+    st.info(f"Используется пользовательское изображение: {img.size[0]}x{img.size[1]}")
+else:
+    img_size = st.sidebar.slider("Размер тестового изображения", 64, 512, 256, step=32)
+    image = create_sample_image(size=(img_size, img_size), pattern="gradient")
 
 # Генерируем интерактивные виджеты для параметров шума (кроме image)
 with st.sidebar.expander("Параметры шума", expanded=True):
