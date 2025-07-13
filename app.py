@@ -135,31 +135,41 @@ except Exception as e:
     noisy_img = image.copy()
     noise = np.zeros_like(image)
 
-# Визуализация изображений
-fig, axs = plt.subplots(1, 3, figsize=(12, 4))
-axs[0].imshow(image, cmap='gray')
-axs[0].set_title('Оригинал')
-axs[0].axis('off')
-axs[1].imshow(noisy_img, cmap='gray')
-axs[1].set_title('С шумом')
-axs[1].axis('off')
-axs[2].imshow(noise, cmap='viridis')
-axs[2].set_title('Шум')
-axs[2].axis('off')
-st.pyplot(fig)
+# Визуализация изображений через st.image
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.image(np.clip(image, 0, 255).astype(np.uint8), caption="Оригинал", use_column_width=True, clamp=True)
+with col2:
+    st.image(np.clip(noisy_img, 0, 255).astype(np.uint8), caption="С шумом", use_column_width=True, clamp=True)
+with col3:
+    # Для шума используем viridis, преобразуем к RGB для наглядности
+    import matplotlib.cm as cm
+    norm_noise = (noise - noise.min()) / (noise.max() - noise.min() + 1e-8)
+    noise_rgb = (cm.viridis(norm_noise)[:, :, :3] * 255).astype(np.uint8)
+    st.image(noise_rgb, caption="Шум (viridis)", use_column_width=True, clamp=True)
 
-# Визуализация гистограмм
-fig_hist, axs_hist = plt.subplots(1, 3, figsize=(12, 3))
-axs_hist[0].hist(image.ravel(), bins=64, color='gray')
-axs_hist[0].set_title('Гистограмма оригинала')
-axs_hist[1].hist(noisy_img.ravel(), bins=64, color='blue')
-axs_hist[1].set_title('Гистограмма с шумом')
-axs_hist[2].hist(noise.ravel(), bins=64, color='purple')
-axs_hist[2].set_title('Гистограмма шума')
-for ax in axs_hist:
+# Визуализация гистограмм (каждая отдельно через st.image)
+def plot_hist(arr, color, title):
+    import io
+    fig, ax = plt.subplots(figsize=(4, 3))
+    ax.hist(arr.ravel(), bins=64, color=color)
+    ax.set_title(title)
     ax.set_xlabel('Значение')
     ax.set_ylabel('Частота')
-st.pyplot(fig_hist)
+    buf = io.BytesIO()
+    fig.tight_layout()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+
+colh1, colh2, colh3 = st.columns(3)
+with colh1:
+    st.image(plot_hist(image, 'gray', 'Гистограмма оригинала'), caption='Гистограмма оригинала', use_column_width=True)
+with colh2:
+    st.image(plot_hist(noisy_img, 'blue', 'Гистограмма с шумом'), caption='Гистограмма с шумом', use_column_width=True)
+with colh3:
+    st.image(plot_hist(noise, 'purple', 'Гистограмма шума'), caption='Гистограмма шума', use_column_width=True)
 
 # --- Генерация кода для выбранного шума ---
 st.markdown("#### Исходный код функции шума")
