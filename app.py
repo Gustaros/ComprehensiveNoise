@@ -7,7 +7,7 @@ import cv2
 from PIL import Image
 import io
 
-st.title("Визуализация шумов (ComprehensiveNoise)")
+st.title("Визуализация шумов")
 
 # --- Режим: один шум или галерея ---
 mode = st.sidebar.radio("Режим", ["Один шум", "Галерея"], index=0)
