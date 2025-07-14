@@ -165,11 +165,11 @@ def plot_hist(arr, color, title):
 
 colh1, colh2, colh3 = st.columns(3)
 with colh1:
-    st.image(plot_hist(image, 'gray', 'Гистограмма оригинала'), caption='Гистограмма оригинала', use_column_width=True)
+    st.image(plot_hist(image, 'gray', ''), caption='Гистограмма оригинала', use_column_width=True)
 with colh2:
-    st.image(plot_hist(noisy_img, 'blue', 'Гистограмма с шумом'), caption='Гистограмма с шумом', use_column_width=True)
+    st.image(plot_hist(noisy_img, 'blue', ''), caption='Гистограмма с шумом', use_column_width=True)
 with colh3:
-    st.image(plot_hist(noise, 'purple', 'Гистограмма шума'), caption='Гистограмма шума', use_column_width=True)
+    st.image(plot_hist(noise, 'purple', ''), caption='Гистограмма шума', use_column_width=True)
 
 # --- Генерация кода для выбранного шума ---
 st.markdown("#### Исходный код функции шума")
