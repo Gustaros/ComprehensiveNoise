@@ -69,8 +69,8 @@ params = sig.parameters
 param_values = {}
 
 st.markdown(f"### {NOISE_LABELS.get(selected_noise, {}).get(lang, selected_noise)}")
-if doc:
-    st.markdown(f"**{T('desc_formula')}:**\n```{doc}```", unsafe_allow_html=True)
+# if doc:
+#     st.markdown(f"**{T('desc_formula')}:**\n```{doc}```", unsafe_allow_html=True)
 
 # Параметры изображения
 user_file = st.sidebar.file_uploader(T('upload'), type=["png", "jpg", "jpeg"])
