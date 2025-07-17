@@ -6,23 +6,28 @@ import inspect
 import cv2
 from PIL import Image
 import io
+from localization import LANGUAGES, TRANSLATIONS
 
-st.title("Визуализация шумов")
+# Выбор языка
+lang = st.sidebar.selectbox('Language / Язык', list(LANGUAGES.keys()), format_func=lambda k: LANGUAGES[k], key='lang', index=1)
+T = lambda key: TRANSLATIONS.get(key, {}).get(lang, key)
+
+st.title(T('title'))
 
 # --- Режим: один шум или галерея ---
-mode = st.sidebar.radio("Режим", ["Один шум", "Галерея"], index=0)
+mode = st.sidebar.radio(T('mode'), [T('mode_one'), T('mode_gallery')], index=0)
 category_names = list(NOISE_CATEGORIES.keys())
 
-if mode == "Галерея":
-    selected_categories = st.sidebar.multiselect("Фильтрация по категориям", category_names, default=category_names)
-    user_file = st.sidebar.file_uploader("Загрузить изображение (PNG/JPG)", type=["png", "jpg", "jpeg"], key="gallery_upload")
+if mode == T('mode_gallery'):
+    selected_categories = st.sidebar.multiselect(T('gallery_filter'), category_names, default=category_names)
+    user_file = st.sidebar.file_uploader(T('upload'), type=["png", "jpg", "jpeg"], key="gallery_upload")
     if user_file is not None:
         img = Image.open(user_file).convert("L")
         image = np.array(img).astype(np.float32)
     else:
-        img_size = st.sidebar.slider("Размер тестового изображения", 64, 512, 128, step=32, key="gallery_imgsize")
+        img_size = st.sidebar.slider(T('imgsize'), 64, 512, 128, step=32, key="gallery_imgsize")
         image = create_sample_image(size=(img_size, img_size), pattern="gradient")
-    st.header("Галерея шумов")
+    st.header(T('gallery_header'))
     for cat in selected_categories:
         st.subheader(cat)
         noise_names = NOISE_CATEGORIES[cat]
@@ -37,7 +42,6 @@ if mode == "Галерея":
                 if "=" in l or "Formula" in l or "PDF" in l or "g(x,y)" in l:
                     formula = l.strip()
                     break
-            # Миниатюра
             try:
                 noisy_img, _ = noise_func(image, **{k: v.default for k, v in inspect.signature(noise_func).parameters.items() if k != "image"})
                 thumb = np.clip(noisy_img, 0, 255).astype(np.uint8)
@@ -45,16 +49,16 @@ if mode == "Галерея":
                 thumb = np.zeros_like(image)
             with cols[idx % 3]:
                 st.image(thumb, caption=noise_name, use_column_width=True, clamp=True)
-                st.markdown(f"**Описание:** {short_desc}")
+                st.markdown(f"**{T('desc')}:** {short_desc}")
                 if formula:
-                    st.markdown(f"<span style='font-size:0.9em;color:#666;'>Формула: <code>{formula}</code></span>", unsafe_allow_html=True)
-    st.caption("Выберите 'Один шум' для подробной настройки параметров.")
+                    st.markdown(f"<span style='font-size:0.9em;color:#666;'>{T('formula')}: <code>{formula}</code></span>", unsafe_allow_html=True)
+    st.caption(T('gallery_hint'))
     st.stop()
 
 # Сайдбар: выбор категории и шума
-category = st.sidebar.selectbox("Категория шума", list(NOISE_CATEGORIES.keys()))
+category = st.sidebar.selectbox(T('category'), list(NOISE_CATEGORIES.keys()))
 noise_names = NOISE_CATEGORIES[category]
-selected_noise = st.sidebar.selectbox("Тип шума", noise_names)
+selected_noise = st.sidebar.selectbox(T('type'), noise_names)
 
 noise_func = noise_functions[selected_noise]
 doc = inspect.getdoc(noise_func)
@@ -64,21 +68,21 @@ param_values = {}
 
 st.markdown(f"### {selected_noise}")
 if doc:
-    st.markdown(f"**Описание и формула:**\n```{doc}```", unsafe_allow_html=True)
+    st.markdown(f"**{T('desc_formula')}:**\n```{doc}```", unsafe_allow_html=True)
 
 # Параметры изображения
-user_file = st.sidebar.file_uploader("Загрузить изображение (PNG/JPG)", type=["png", "jpg", "jpeg"])
+user_file = st.sidebar.file_uploader(T('upload'), type=["png", "jpg", "jpeg"])
 
 if user_file is not None:
     img = Image.open(user_file).convert("L")
     image = np.array(img).astype(np.float32)
-    st.info(f"Используется пользовательское изображение: {img.size[0]}x{img.size[1]}")
+    st.info(f"{T('upload')}: {img.size[0]}x{img.size[1]}")
 else:
-    img_size = st.sidebar.slider("Размер тестового изображения", 64, 512, 256, step=32)
+    img_size = st.sidebar.slider(T('imgsize'), 64, 512, 256, step=32)
     image = create_sample_image(size=(img_size, img_size), pattern="gradient")
 
 # Генерируем интерактивные виджеты для параметров шума (кроме image)
-with st.sidebar.expander("Параметры шума", expanded=True):
+with st.sidebar.expander(T('params'), expanded=True):
     minmax_cache = {}
     for name, param in params.items():
         if name == "image":
@@ -138,15 +142,15 @@ except Exception as e:
 # Визуализация изображений через st.image
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.image(np.clip(image, 0, 255).astype(np.uint8), caption="Оригинал", use_column_width=True, clamp=True)
+    st.image(np.clip(image, 0, 255).astype(np.uint8), caption=T('original'), use_column_width=True, clamp=True)
 with col2:
-    st.image(np.clip(noisy_img, 0, 255).astype(np.uint8), caption="С шумом", use_column_width=True, clamp=True)
+    st.image(np.clip(noisy_img, 0, 255).astype(np.uint8), caption=T('with_noise'), use_column_width=True, clamp=True)
 with col3:
     # Для шума используем viridis, преобразуем к RGB для наглядности
     import matplotlib.cm as cm
     norm_noise = (noise - noise.min()) / (noise.max() - noise.min() + 1e-8)
     noise_rgb = (cm.viridis(norm_noise)[:, :, :3] * 255).astype(np.uint8)
-    st.image(noise_rgb, caption="Шум (viridis)", use_column_width=True, clamp=True)
+    st.image(noise_rgb, caption=T('noise') + ' (viridis)', use_column_width=True, clamp=True)
 
 # Визуализация гистограмм (каждая отдельно через st.image)
 def plot_hist(arr, color, title):
@@ -165,18 +169,18 @@ def plot_hist(arr, color, title):
 
 colh1, colh2, colh3 = st.columns(3)
 with colh1:
-    st.image(plot_hist(image, 'gray', ''), caption='Гистограмма оригинала', use_column_width=True)
+    st.image(plot_hist(image, 'gray', ''), caption=T('hist_orig'), use_column_width=True)
 with colh2:
-    st.image(plot_hist(noisy_img, 'blue', ''), caption='Гистограмма с шумом', use_column_width=True)
+    st.image(plot_hist(noisy_img, 'blue', ''), caption=T('hist_noisy'), use_column_width=True)
 with colh3:
-    st.image(plot_hist(noise, 'purple', ''), caption='Гистограмма шума', use_column_width=True)
+    st.image(plot_hist(noise, 'purple', ''), caption=T('hist_noise'), use_column_width=True)
 
 # --- Генерация кода для выбранного шума ---
-st.markdown("#### Исходный код функции шума")
+st.markdown(f"#### {T('source_code')}")
 try:
     code_str = inspect.getsource(noise_func)
     st.code(code_str, language="python")
 except Exception:
     st.warning("Не удалось получить исходный код функции. Возможно, она импортирована динамически.")
 
-st.caption("© ComprehensiveNoise, 2025")
+st.caption(T('caption'))
