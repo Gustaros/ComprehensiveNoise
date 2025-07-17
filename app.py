@@ -158,8 +158,8 @@ def plot_hist(arr, color, title):
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.hist(arr.ravel(), bins=64, color=color)
     ax.set_title(title)
-    ax.set_xlabel('Значение')
-    ax.set_ylabel('Частота')
+    ax.set_xlabel(T('xlabel'))
+    ax.set_ylabel(T('ylabel'))
     buf = io.BytesIO()
     fig.tight_layout()
     fig.savefig(buf, format='png')
@@ -169,11 +169,11 @@ def plot_hist(arr, color, title):
 
 colh1, colh2, colh3 = st.columns(3)
 with colh1:
-    st.image(plot_hist(image, 'gray', ''), caption=T('hist_orig'), use_column_width=True)
+    st.image(plot_hist(image, 'gray', T('hist_orig')), caption=T('hist_orig'), use_column_width=True)
 with colh2:
-    st.image(plot_hist(noisy_img, 'blue', ''), caption=T('hist_noisy'), use_column_width=True)
+    st.image(plot_hist(noisy_img, 'blue', T('hist_noisy')), caption=T('hist_noisy'), use_column_width=True)
 with colh3:
-    st.image(plot_hist(noise, 'purple', ''), caption=T('hist_noise'), use_column_width=True)
+    st.image(plot_hist(noise, 'purple', T('hist_noise')), caption=T('hist_noise'), use_column_width=True)
 
 # --- Генерация кода для выбранного шума ---
 st.markdown(f"#### {T('source_code')}")
@@ -181,6 +181,6 @@ try:
     code_str = inspect.getsource(noise_func)
     st.code(code_str, language="python")
 except Exception:
-    st.warning("Не удалось получить исходный код функции. Возможно, она импортирована динамически.")
+    st.warning(T('source_code_error'))
 
 st.caption(T('caption'))

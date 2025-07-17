@@ -30,4 +30,10 @@ TRANSLATIONS = {
     'hist_orig': {'ru': 'Гистограмма оригинала', 'en': 'Original histogram'},
     'hist_noisy': {'ru': 'Гистограмма с шумом', 'en': 'Histogram with noise'},
     'hist_noise': {'ru': 'Гистограмма шума', 'en': 'Noise histogram'},
+    'xlabel': {'ru': 'Значение', 'en': 'Value'},
+    'ylabel': {'ru': 'Частота', 'en': 'Frequency'},
+    'source_code_error': {
+        'ru': 'Не удалось получить исходный код функции. Возможно, она импортирована динамически.',
+        'en': 'Failed to get function source code. It may be imported dynamically.'
+    }
 }
