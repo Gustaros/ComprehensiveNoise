@@ -50,7 +50,7 @@ if mode == T('mode_gallery'):
             except Exception:
                 thumb = np.zeros_like(image)
             with cols[idx % 3]:
-                st.image(thumb, caption=NOISE_LABELS.get(noise_name, {}).get(lang, noise_name), use_column_width=True, clamp=True)
+                st.image(thumb, caption=NOISE_LABELS.get(noise_name, {}).get(lang, noise_name), use_container_width=True, clamp=True)
                 st.markdown(f"**{T('desc')}:** {short_desc}")
                 if formula:
                     st.markdown(f"<span style='font-size:0.9em;color:#666;'>{T('formula')}: <code>{formula}</code></span>", unsafe_allow_html=True)
@@ -144,15 +144,15 @@ except Exception as e:
 # Визуализация изображений через st.image
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.image(np.clip(image, 0, 255).astype(np.uint8), caption=T('original'), use_column_width=True, clamp=True)
+    st.image(np.clip(image, 0, 255).astype(np.uint8), caption=T('original'), use_container_width=True, clamp=True)
 with col2:
-    st.image(np.clip(noisy_img, 0, 255).astype(np.uint8), caption=T('with_noise'), use_column_width=True, clamp=True)
+    st.image(np.clip(noisy_img, 0, 255).astype(np.uint8), caption=T('with_noise'), use_container_width=True, clamp=True)
 with col3:
     # Для шума используем viridis, преобразуем к RGB для наглядности
     import matplotlib.cm as cm
     norm_noise = (noise - noise.min()) / (noise.max() - noise.min() + 1e-8)
     noise_rgb = (cm.viridis(norm_noise)[:, :, :3] * 255).astype(np.uint8)
-    st.image(noise_rgb, caption=T('noise') + ' (viridis)', use_column_width=True, clamp=True)
+    st.image(noise_rgb, caption=T('noise') + ' (viridis)', use_container_width=True, clamp=True)
 
 # Визуализация гистограмм (каждая отдельно через st.image)
 def plot_hist(arr, color, title):
@@ -171,11 +171,11 @@ def plot_hist(arr, color, title):
 
 colh1, colh2, colh3 = st.columns(3)
 with colh1:
-    st.image(plot_hist(image, 'gray', T('hist_orig')), caption=T('hist_orig'), use_column_width=True)
+    st.image(plot_hist(image, 'gray', T('hist_orig')), caption=T('hist_orig'), use_container_width=True)
 with colh2:
-    st.image(plot_hist(noisy_img, 'blue', T('hist_noisy')), caption=T('hist_noisy'), use_column_width=True)
+    st.image(plot_hist(noisy_img, 'blue', T('hist_noisy')), caption=T('hist_noisy'), use_container_width=True)
 with colh3:
-    st.image(plot_hist(noise, 'purple', T('hist_noise')), caption=T('hist_noise'), use_column_width=True)
+    st.image(plot_hist(noise, 'purple', T('hist_noise')), caption=T('hist_noise'), use_container_width=True)
 
 # --- Генерация кода для выбранного шума ---
 st.markdown(f"#### {T('source_code')}")
