@@ -6,3 +6,7 @@ opencv-python
 pywavelets
 perlin_noise
 streamlit
+
+# System dependencies for OpenCV and matplotlib
+# streamlit: system-packages
+libgl1-mesa-glx
