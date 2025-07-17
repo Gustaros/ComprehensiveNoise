@@ -6,7 +6,7 @@ import inspect
 import cv2
 from PIL import Image
 import io
-from localization import LANGUAGES, TRANSLATIONS
+from localization import LANGUAGES, TRANSLATIONS, NOISE_LABELS
 
 # Выбор языка
 lang = st.sidebar.selectbox('Language / Язык', list(LANGUAGES.keys()), format_func=lambda k: LANGUAGES[k], key='lang', index=1)
@@ -17,9 +17,10 @@ st.title(T('title'))
 # --- Режим: один шум или галерея ---
 mode = st.sidebar.radio(T('mode'), [T('mode_one'), T('mode_gallery')], index=0)
 category_names = list(NOISE_CATEGORIES.keys())
+category_labels = [NOISE_LABELS.get(cat, {}).get(lang, cat) for cat in category_names]
 
 if mode == T('mode_gallery'):
-    selected_categories = st.sidebar.multiselect(T('gallery_filter'), category_names, default=category_names)
+    selected_categories = st.sidebar.multiselect(T('gallery_filter'), category_names, default=category_names, format_func=lambda k: NOISE_LABELS.get(k, {}).get(lang, k))
     user_file = st.sidebar.file_uploader(T('upload'), type=["png", "jpg", "jpeg"], key="gallery_upload")
     if user_file is not None:
         img = Image.open(user_file).convert("L")
@@ -29,8 +30,9 @@ if mode == T('mode_gallery'):
         image = create_sample_image(size=(img_size, img_size), pattern="gradient")
     st.header(T('gallery_header'))
     for cat in selected_categories:
-        st.subheader(cat)
+        st.subheader(NOISE_LABELS.get(cat, {}).get(lang, cat))
         noise_names = NOISE_CATEGORIES[cat]
+        noise_labels = [NOISE_LABELS.get(n, {}).get(lang, n) for n in noise_names]
         cols = st.columns(3)
         for idx, noise_name in enumerate(noise_names):
             noise_func = noise_functions[noise_name]
@@ -48,7 +50,7 @@ if mode == T('mode_gallery'):
             except Exception:
                 thumb = np.zeros_like(image)
             with cols[idx % 3]:
-                st.image(thumb, caption=noise_name, use_column_width=True, clamp=True)
+                st.image(thumb, caption=NOISE_LABELS.get(noise_name, {}).get(lang, noise_name), use_column_width=True, clamp=True)
                 st.markdown(f"**{T('desc')}:** {short_desc}")
                 if formula:
                     st.markdown(f"<span style='font-size:0.9em;color:#666;'>{T('formula')}: <code>{formula}</code></span>", unsafe_allow_html=True)
@@ -56,9 +58,9 @@ if mode == T('mode_gallery'):
     st.stop()
 
 # Сайдбар: выбор категории и шума
-category = st.sidebar.selectbox(T('category'), list(NOISE_CATEGORIES.keys()))
+category = st.sidebar.selectbox(T('category'), category_names, format_func=lambda k: NOISE_LABELS.get(k, {}).get(lang, k))
 noise_names = NOISE_CATEGORIES[category]
-selected_noise = st.sidebar.selectbox(T('type'), noise_names)
+selected_noise = st.sidebar.selectbox(T('type'), noise_names, format_func=lambda k: NOISE_LABELS.get(k, {}).get(lang, k))
 
 noise_func = noise_functions[selected_noise]
 doc = inspect.getdoc(noise_func)
@@ -66,7 +68,7 @@ sig = inspect.signature(noise_func)
 params = sig.parameters
 param_values = {}
 
-st.markdown(f"### {selected_noise}")
+st.markdown(f"### {NOISE_LABELS.get(selected_noise, {}).get(lang, selected_noise)}")
 if doc:
     st.markdown(f"**{T('desc_formula')}:**\n```{doc}```", unsafe_allow_html=True)
 
