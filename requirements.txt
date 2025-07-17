@@ -1,0 +1,7 @@
+matplotlib
+numpy
+scipy
+scikit-image
+opencv-python
+pywavelets
+perlin_noise
